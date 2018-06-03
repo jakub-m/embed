@@ -91,11 +91,20 @@ int main(void)
     
     /* Insert delay */
     Delay(0x7FFFFF);
-    
-    GPIO_ResetBits(GPIOD, GPIO_Pin_12|GPIO_Pin_13|GPIO_Pin_14|GPIO_Pin_15);
+
+    GPIO_ResetBits(GPIOD, GPIO_Pin_15);
+    Delay(0x7FFFFF);
+    GPIO_ResetBits(GPIOD, GPIO_Pin_14);
+    Delay(0x7FFFFF);
+    GPIO_ResetBits(GPIOD, GPIO_Pin_13);
+    Delay(0x7FFFFF);
+    GPIO_ResetBits(GPIOD, GPIO_Pin_12);
+    Delay(0x7FFFFF);
+
+    //GPIO_ResetBits(GPIOD, GPIO_Pin_12|GPIO_Pin_13|GPIO_Pin_14|GPIO_Pin_15);
     
     /* Insert delay */
-    Delay(0xFFFFFF);
+    //Delay(0xFFFFFF);
   }
 }
 
