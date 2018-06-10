@@ -1,6 +1,19 @@
 # put your *.o targets here, make should handle the rest!
 
-SRCS = main.c stm32f4xx_it.c system_stm32f4xx.c
+HEADERS = FreeRTOS/Demo/CORTEX_M4F_STM32F407ZG-SK/FreeRTOSConfig.h
+
+SRCS = main.c \
+       stm32f4xx_it.c \
+       system_stm32f4xx.c \
+       FreeRTOS/Source/croutine.c \
+       FreeRTOS/Source/list.c \
+       FreeRTOS/Source/queue.c \
+       FreeRTOS/Source/event_groups.c \
+       FreeRTOS/Source/timers.c \
+       FreeRTOS/Source/tasks.c \
+       FreeRTOS/Source/stream_buffer.c \
+       FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c \
+       FreeRTOS/Source/portable/MemMang/heap_1.c
 
 # all the files will be generated with this name (main.elf, main.bin, main.hex, etc)
 
@@ -26,6 +39,9 @@ ROOT=$(shell pwd)
 
 CFLAGS += -Iinc -Ilib -Ilib/inc 
 CFLAGS += -Ilib/inc/core -Ilib/inc/peripherals 
+CFLAGS += -IFreeRTOS/Source/include
+CFLAGS += -IFreeRTOS/Demo/CORTEX_M4F_STM32F407ZG-SK
+CFLAGS += -IFreeRTOS/Source/portable/GCC/ARM_CM4F
 
 SRCS += lib/startup_stm32f4xx.s # add startup file to build
 
@@ -42,7 +58,7 @@ lib:
 
 proj: 	$(PROJ_NAME).elf
 
-$(PROJ_NAME).elf: $(SRCS)
+$(PROJ_NAME).elf: $(HEADERS) $(SRCS)
 	$(CC) $(CFLAGS) $^ -o $@ -Llib -lstm32f4
 	$(OBJCOPY) -O ihex $(PROJ_NAME).elf $(PROJ_NAME).hex
 	$(OBJCOPY) -O binary $(PROJ_NAME).elf $(PROJ_NAME).bin
