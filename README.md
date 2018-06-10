@@ -1,3 +1,6 @@
+# embed
+Embedded playground.
+
 Based on:
 
 * [FreeRTOS][freertos], snapshot 2543
