@@ -1,4 +1,3 @@
-# embed
 Embedded playground.
 
 Based on:
@@ -8,3 +7,10 @@ Based on:
 
 [freertos]:https://www.freertos.org/a00104.html
 [templates]:https://github.com/jeremyherbert/stm32-templates
+
+# Tools
+
+    sudo apt-get install \
+      gcc-arm-none-eabi \
+	  gdb-arm-none-eabi \
+	  libnewlib-arm-none-eabi
