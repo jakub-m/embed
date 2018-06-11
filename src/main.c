@@ -1,51 +1,15 @@
-/**
-  ******************************************************************************
-  * @file    IO_Toggle/main.c 
-  * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    19-September-2011
-  * @brief   Main program body
-  ******************************************************************************
-  * @attention
-  *
-  * THE PRESENT FIRMWARE WHICH IS FOR GUIDANCE ONLY AIMS AT PROVIDING CUSTOMERS
-  * WITH CODING INFORMATION REGARDING THEIR PRODUCTS IN ORDER FOR THEM TO SAVE
-  * TIME. AS A RESULT, STMICROELECTRONICS SHALL NOT BE HELD LIABLE FOR ANY
-  * DIRECT, INDIRECT OR CONSEQUENTIAL DAMAGES WITH RESPECT TO ANY CLAIMS ARISING
-  * FROM THE CONTENT OF SUCH FIRMWARE AND/OR THE USE MADE BY CUSTOMERS OF THE
-  * CODING INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
-  *
-  * <h2><center>&copy; COPYRIGHT 2011 STMicroelectronics</center></h2>
-  ******************************************************************************  
-  */ 
-
-/* Includes ------------------------------------------------------------------*/
+#include "FreeRTOS.h"
+#include "task.h"
 #include "stm32f4_discovery.h"
-#include "stm32f4xx_conf.h" // again, added because ST didn't put it here ?
+#include "stm32f4xx_conf.h"
 
-/** @addtogroup STM32F4_Discovery_Peripheral_Examples
-  * @{
-  */
+#define ledSTACK_SIZE	configMINIMAL_STACK_SIZE
+#define ledFLASH_RATE	( 125 )
+#define ledPRIORITY		( tskIDLE_PRIORITY + 1UL )
 
-/** @addtogroup IO_Toggle
-  * @{
-  */ 
-
-/* Private typedef -----------------------------------------------------------*/
 GPIO_InitTypeDef  GPIO_InitStructure;
+static void vLEDFlashTask( void *pvParameters );
 
-/* Private define ------------------------------------------------------------*/
-/* Private macro -------------------------------------------------------------*/
-/* Private variables ---------------------------------------------------------*/
-/* Private function prototypes -----------------------------------------------*/
-void Delay(__IO uint32_t nCount);
-/* Private functions ---------------------------------------------------------*/
-
-/**
-  * @brief  Main program
-  * @param  None
-  * @retval None
-  */
 int main(void)
 {
   /*!< At this stage the microcontroller clock setting is already configured, 
@@ -66,87 +30,62 @@ int main(void)
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
   GPIO_Init(GPIOD, &GPIO_InitStructure);
 
-  while (1)
-  {
-    /* PD12 to be toggled */
-    GPIO_SetBits(GPIOD, GPIO_Pin_12);
-    
-    /* Insert delay */
-    Delay(0x3FFFFF);
-    
-    /* PD13 to be toggled */
-    GPIO_SetBits(GPIOD, GPIO_Pin_13);
-    
-    /* Insert delay */
-    Delay(0x3FFFFF);
-  
-    /* PD14 to be toggled */
-    GPIO_SetBits(GPIOD, GPIO_Pin_14);
-    
-    /* Insert delay */
-    Delay(0x3FFFFF);
-    
-    /* PD15 to be toggled */
-    GPIO_SetBits(GPIOD, GPIO_Pin_15);
-    
-    /* Insert delay */
-    Delay(0x7FFFFF);
+  // https://github.com/cjlano/freertos/blob/master/FreeRTOS/Demo/CORTEX_M4F_STM32F407ZG-SK/main.c
+  /* Ensure all priority bits are assigned as preemption priority bits. */
+  NVIC_PriorityGroupConfig( NVIC_PriorityGroup_4 );
 
-    GPIO_ResetBits(GPIOD, GPIO_Pin_15);
-    Delay(0x7FFFFF);
-    GPIO_ResetBits(GPIOD, GPIO_Pin_14);
-    Delay(0x7FFFFF);
-    GPIO_ResetBits(GPIOD, GPIO_Pin_13);
-    Delay(0x7FFFFF);
-    GPIO_ResetBits(GPIOD, GPIO_Pin_12);
-    Delay(0x7FFFFF);
+  // https://github.com/cjlano/freertos/blob/7745275fcde3121f1bab36a8d43eb5df28a31c3c/FreeRTOS/Demo/Common/Full/flash.c#L108
+  xTaskCreate( vLEDFlashTask, "LED1", ledSTACK_SIZE, ( void * ) NULL, ledPRIORITY, ( TaskHandle_t * ) NULL );
 
-    //GPIO_ResetBits(GPIOD, GPIO_Pin_12|GPIO_Pin_13|GPIO_Pin_14|GPIO_Pin_15);
-    
-    /* Insert delay */
-    //Delay(0xFFFFFF);
-  }
+  for(;;);
 }
 
-/**
-  * @brief  Delay Function.
-  * @param  nCount:specifies the Delay time length.
-  * @retval None
-  */
-void Delay(__IO uint32_t nCount)
+static void vLEDFlashTask( void *pvParameters )
 {
-  while(nCount--)
-  {
-  }
+    for(;;)
+    {
+        vTaskDelay( ledFLASH_RATE  / ( TickType_t ) 2 );
+  	    GPIO_SetBits(GPIOD, GPIO_Pin_12);
+        vTaskDelay( ledFLASH_RATE  / ( TickType_t ) 2 );
+  	    GPIO_ResetBits(GPIOD, GPIO_Pin_12);
+    }
 }
 
-#ifdef  USE_FULL_ASSERT
 
-/**
-  * @brief  Reports the name of the source file and the source line number
-  *         where the assert_param error has occurred.
-  * @param  file: pointer to the source file name
-  * @param  line: assert_param error line source number
-  * @retval None
-  */
-void assert_failed(uint8_t* file, uint32_t line)
-{ 
-  /* User can add his own implementation to report the file name and line number,
-     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+  //while (1)
+  //{
+  //  /* PD12 to be toggled */
+  //  GPIO_SetBits(GPIOD, GPIO_Pin_12);
+  //  
+  //  /* Insert delay */
+  //  Delay(0x3FFFFF);
+  //  
+  //  /* PD13 to be toggled */
+  //  GPIO_SetBits(GPIOD, GPIO_Pin_13);
+  //  
+  //  /* Insert delay */
+  //  Delay(0x3FFFFF);
+  //
+  //  /* PD14 to be toggled */
+  //  GPIO_SetBits(GPIOD, GPIO_Pin_14);
+  //  
+  //  /* Insert delay */
+  //  Delay(0x3FFFFF);
+  //  
+  //  /* PD15 to be toggled */
+  //  GPIO_SetBits(GPIOD, GPIO_Pin_15);
+  //  
+  //  /* Insert delay */
+  //  Delay(0x7FFFFF);
 
-  /* Infinite loop */
-  while (1)
-  {
-  }
-}
-#endif
+  //  GPIO_ResetBits(GPIOD, GPIO_Pin_15);
+  //  Delay(0x7FFFFF);
+  //  GPIO_ResetBits(GPIOD, GPIO_Pin_14);
+  //  Delay(0x7FFFFF);
+  //  GPIO_ResetBits(GPIOD, GPIO_Pin_13);
+  //  Delay(0x7FFFFF);
+  //  GPIO_ResetBits(GPIOD, GPIO_Pin_12);
+  //  Delay(0x7FFFFF);
 
-/**
-  * @}
-  */ 
+  //}
 
-/**
-  * @}
-  */ 
-
-/******************* (C) COPYRIGHT 2011 STMicroelectronics *****END OF FILE****/
