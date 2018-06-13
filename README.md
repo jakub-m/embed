@@ -15,3 +15,24 @@ Based on:
       gcc-arm-none-eabi \
 	  gdb-arm-none-eabi \
 	  libnewlib-arm-none-eabi
+
+OpenOCD configurations from https://github.com/arduino/OpenOCD
+
+# Commands
+
+OpenOCD server:
+
+	openocd -f ./OpenOCD/tcl/board/stm32f4discovery.cfg
+
+OpenOCD client:
+
+	telnet localhost 4444
+	reset halt
+	flash write_image erase main.bin 0x08000000
+	reset run
+
+debugger:
+
+	arm-none-eabi-gdb
+	target localhost:3333
+	file main.elf
