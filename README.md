@@ -34,5 +34,5 @@ OpenOCD client:
 debugger:
 
 	arm-none-eabi-gdb
-	target localhost:3333
+	target remote localhost:3333
 	file main.elf

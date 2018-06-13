@@ -10,6 +10,12 @@
 GPIO_InitTypeDef  GPIO_InitStructure;
 static void vLEDFlashTask( void *pvParameters );
 
+void Delay (int i) {
+	while (i > 0) {
+		i--;
+	}
+}
+
 int main(void)
 {
   /*!< At this stage the microcontroller clock setting is already configured, 
@@ -35,19 +41,36 @@ int main(void)
   NVIC_PriorityGroupConfig( NVIC_PriorityGroup_4 );
 
   // https://github.com/cjlano/freertos/blob/7745275fcde3121f1bab36a8d43eb5df28a31c3c/FreeRTOS/Demo/Common/Full/flash.c#L108
-  xTaskCreate( vLEDFlashTask, "LED1", ledSTACK_SIZE, ( void * ) NULL, ledPRIORITY, ( TaskHandle_t * ) NULL );
+  GPIO_SetBits(GPIOD, GPIO_Pin_13);
+  BaseType_t t;
+  t = xTaskCreate( vLEDFlashTask, "LED1", ledSTACK_SIZE, ( void * ) NULL, ledPRIORITY, ( TaskHandle_t * ) NULL );
+  int foo = 0;
+  if ( t == pdPASS) {
+	  foo = 1;
+  } else {
+	  foo = 2;
+  }
+  GPIO_SetBits(GPIOD, GPIO_Pin_12);
 
-  for(;;);
+  vTaskStartScheduler();
+  // Should never pass this point.
+
+  for(;;) {
+	  GPIO_SetBits(GPIOD, GPIO_Pin_12);
+	  Delay(0x3FFFFF);
+	  GPIO_ResetBits(GPIOD, GPIO_Pin_12);
+	  Delay(0x3FFFFF);
+  }
 }
 
 static void vLEDFlashTask( void *pvParameters )
 {
     for(;;)
     {
-        vTaskDelay( ledFLASH_RATE  / ( TickType_t ) 2 );
   	    GPIO_SetBits(GPIOD, GPIO_Pin_12);
-        vTaskDelay( ledFLASH_RATE  / ( TickType_t ) 2 );
+        vTaskDelay( 10000 );
   	    GPIO_ResetBits(GPIOD, GPIO_Pin_12);
+        vTaskDelay( 10000 );
     }
 }
 
