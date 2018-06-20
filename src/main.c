@@ -18,6 +18,7 @@ void Delay (int i) {
 
 typedef struct ledTaskParameters {
 	uint16_t ledPin;
+	TickType_t tick;
 } ledTaskParameters_t;
 
 int main(void)
@@ -48,10 +49,24 @@ int main(void)
   GPIO_SetBits(GPIOD, GPIO_Pin_13);
   BaseType_t t;
 
-  ledTaskParameters_t ledParams = {ledPin: GPIO_Pin_13};
-  t = xTaskCreate( vLEDFlashTask, "LED1", ledSTACK_SIZE, ( void * ) &ledParams, ledPRIORITY, ( TaskHandle_t * ) NULL );
+  // The parameters MUST be statically allocated, otherwise they do not
+  // allocate properly (there is garbage there after passing to thread). I
+  // don't know why.
+  static ledTaskParameters_t ledParams1 = {ledPin: GPIO_Pin_15, tick: 10000};
+  xTaskCreate( vLEDFlashTask, "LED1", ledSTACK_SIZE, ( void * ) &ledParams1, ledPRIORITY, ( TaskHandle_t * ) NULL );
 
-  GPIO_ResetBits(GPIOD, GPIO_Pin_12);
+  static ledTaskParameters_t ledParams2 = {ledPin: GPIO_Pin_14, tick: 7500};
+  xTaskCreate( vLEDFlashTask, "LED2", ledSTACK_SIZE, ( void * ) &ledParams2, ledPRIORITY, ( TaskHandle_t * ) NULL );
+
+  static ledTaskParameters_t ledParams3 = {ledPin: GPIO_Pin_13, tick: 5000};
+  xTaskCreate( vLEDFlashTask, "LED3", ledSTACK_SIZE, ( void * ) &ledParams3, ledPRIORITY, ( TaskHandle_t * ) NULL );
+
+  static ledTaskParameters_t ledParams4 = {ledPin: GPIO_Pin_12, tick: 2500};
+  xTaskCreate( vLEDFlashTask, "LED4", ledSTACK_SIZE, ( void * ) &ledParams4, ledPRIORITY, ( TaskHandle_t * ) NULL );
+
+
+
+  GPIO_SetBits(GPIOD, GPIO_Pin_12);
 
   vTaskStartScheduler();
   // Should never pass this point.
@@ -66,13 +81,14 @@ int main(void)
 
 static void vLEDFlashTask( void *pvParameters )
 {
+	ledTaskParameters_t* params = (ledTaskParameters_t*) pvParameters;
     for(;;)
     {
-  	    GPIO_SetBits(GPIOD, GPIO_Pin_14);
-        vTaskDelay( 10000 );
-  	    GPIO_ResetBits(GPIOD, GPIO_Pin_14);
-        vTaskDelay( 10000 );
-    }
+  	    GPIO_SetBits(GPIOD, params->ledPin);
+        vTaskDelay( params->tick );
+  	    GPIO_ResetBits(GPIOD, params->ledPin);
+        vTaskDelay( params->tick);
+	}
 }
 
 
